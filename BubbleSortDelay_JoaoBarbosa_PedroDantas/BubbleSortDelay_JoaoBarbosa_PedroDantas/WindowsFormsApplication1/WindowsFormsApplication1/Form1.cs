@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Threading;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -14,30 +16,25 @@ namespace WindowsFormsApplication1
     public partial class Form1 : Form
     {
         List list;
+        List<int> listBubble = new List<int>(); 
+        Stopwatch stopWatch = new Stopwatch();
 
-        List<string> listBubble = new List<string>();
+        DateTime down;
+        DateTime now;
 
         #region
         Random random = new Random();
         int randomNumber;
+        int loop;
         #endregion
 
         public Form1()
         {
             InitializeComponent();
             list = new List(2, 3, 4, 1);
-
+            
+            loop = 50;
             listBox1.Items.AddRange(list.ToArray());
-
-            #region
-            for (int i = 0; i < 800; i++)
-            {
-                randomNumber = random.Next(0, 4000);
-                Console.WriteLine(randomNumber);
-                listBubble.Add(Convert.ToString(randomNumber));
-            }
-            listBox2.Items.AddRange(listBubble.ToArray());
-            #endregion
         }
         #region
         private void button1_Click(object sender, EventArgs e)
@@ -137,42 +134,78 @@ namespace WindowsFormsApplication1
 
         private void button2_Click(object sender, EventArgs e)
         {
-            DateTime now = DateTime.Now;
-            Console.WriteLine(String.Format("{0:00}hr:{1:00}min:{2:00}seg:{3:000}ms", now.Hour, now.Minute, now.Second, now.Millisecond )+ "\n");
-            
-            int[] bubble = new int[listBubble.Count];
-            for (int i = 0; i < listBubble.Count; i++)
-            {
-                bubble[i] = Convert.ToInt32(listBubble.ToArray()[i]);
-            }
+            listBubble.Clear();
+            Inicializate();
+        }
 
-            for (int i = 0; i < bubble.Length; i++)
+        private void Inicializate()
+        {
+            #region
+            for (int i = 0; i < loop; i++)
             {
-                for (int j = i + 1; j < bubble.Length; j++)
+                randomNumber = random.Next(0, 40000);
+                //Console.WriteLine(randomNumber);
+                //listBox2.Items.Add(randomNumber.ToString());
+                listBubble.Add(randomNumber);
+            }
+            
+            Sort();
+            #endregion
+        }
+
+        private void Reset()
+        {
+            listBubble.Clear();
+            loop += 50;
+            Inicializate();
+        }
+
+        private void Sort()
+        {
+            stopWatch.Start();
+
+            double time = stopWatch.Elapsed.TotalMilliseconds;
+
+            int[] listBubbleArray = listBubble.ToArray();
+
+            for (int i = 0; i < listBubbleArray.Length - 1; i++)
+            {
+                for (int j = i + 1; j < listBubbleArray.Length; j++)
                 {
-                    if (bubble[i] > bubble[j])
+                    int a = listBubbleArray[i];
+                    int p = listBubbleArray[j];
+                    if (a > p)
                     {
-                        int temp = bubble[i];
-                        bubble[i] = bubble[j];
-                        bubble[j] = temp;
-                        label1.Text = "Result in Console";
+                        listBubbleArray[i] = p;
+                        listBubbleArray[j] = a;
                     }
                 }
-                Console.Write(bubble[i] + " ");
+
             }
+            listBubble.Clear();
+            listBubble.AddRange(listBubbleArray);
 
-            DateTime down = DateTime.Now;
-            Console.WriteLine(String.Format("{0:00}hr:{1:00}min:{2:00}seg:{3:000}ms", down.Hour, down.Minute, down.Second, down.Millisecond) + "\n");
-            
-            int result;
-            int minutesRest;
-            int secondRest;
+            foreach (int item in listBubble)
+            {
+                //Console.WriteLine(item.ToString());
+            }
+            Console.WriteLine(listBubbleArray.Length);
+           
+            if (loop >= 20000)
+            {
+                Console.WriteLine(time + " RunTime");
+                List list = new List(listBubble.ToArray());
+                listBox2.Items.Clear();
+                listBox2.Items.AddRange(list.ToArray());
+            }
+            else
+            {
+                stopWatch.Stop();
+                Console.WriteLine(time + " RunTime");
+                Reset();
+                
+            } 
 
-            minutesRest = down.Minute - now.Minute; // * 60
-            secondRest = down.Second - now.Second; //* 1000
-            result = (down.Millisecond - now.Millisecond) + (minutesRest * 60) + (secondRest * 1000);
-
-            label2.Text = String.Format("{0:000} ms", result);
         }
 
         private void button3_Click(object sender, EventArgs e)
